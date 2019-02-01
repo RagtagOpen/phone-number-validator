@@ -10,6 +10,7 @@ phonenumbers = "*"
 [dev-packages]
 pylint = "*"
 zappa = "*"
+black = "*"
 
 [requires]
 python_version = "3.6"
