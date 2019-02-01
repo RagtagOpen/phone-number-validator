@@ -1,0 +1,8 @@
+{
+    "dev": {
+        "app_function": "run.app",
+        "project_name": "phone-scrubber",
+        "runtime": "python3.6",
+        "s3_bucket": "zappa-4iwm4s32u"
+    }
+}
