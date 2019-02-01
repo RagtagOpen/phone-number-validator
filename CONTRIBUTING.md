@@ -8,7 +8,7 @@ Phone Number Validator is an open source project and we love to receive contribu
 
 ## Responsibilities
 
-- We pledge to make participation in our projects and community a harrasment-free experience for everyone. Please read and adhere to [Ragtag's Code of Conduct](https://ragtag.org/coc) when interacting with others on this project. Please report unacceptable behavior to coc@ragtag.org.
+- We pledge to make participation in our projects and community a harrasment-free experience for everyone. Please read and adhere to [Ragtag's Code of Conduct](../CODE_OF_CONDUCT.md) when interacting with others on this project. Please report unacceptable behavior to coc@ragtag.org.
 - We follow [Google's Style Guides](https://google.github.io/styleguide/) for writing software. Please read and follow the appropriate language guides for your contributions.
 - We require that all code be formatted by [Prettier](https://prettier.io/) where applicable. We use the default settings for each language.
 - Create issues for any major changes and enhancements that you wish to make. Discuss things transparently and get community feedback.
