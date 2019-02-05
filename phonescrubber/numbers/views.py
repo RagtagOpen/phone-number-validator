@@ -2,7 +2,7 @@ import phonenumbers
 import phonenumbers.geocoder
 import phonenumbers.carrier
 import phonenumbers.timezone
-from flask import abort, jsonify, make_response
+from flask import abort, jsonify, make_response, redirect
 from phonescrubber.numbers import numbers_bp
 
 
@@ -64,3 +64,11 @@ def check_number(telephone):
         }
 
     return jsonify(result)
+
+
+@numbers_bp.route('/favicon.ico')
+def favicon_redirect():
+    return redirect(
+        'https://assets.ragtag.tech/favicon.ico',
+        301,
+    )
