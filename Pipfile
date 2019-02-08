@@ -8,10 +8,10 @@ flask = "*"
 phonenumbers = "*"
 
 [dev-packages]
-pylint = "*"
-zappa = "*"
 black = "*"
+pylint = "*"
 pytest = "*"
+zappa = "*"
 
 [requires]
 python_version = "3.6"
