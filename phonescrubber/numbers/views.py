@@ -65,7 +65,7 @@ def validate_number(number):
             "tz": phonenumbers.timezone.time_zones_for_number(x),
         }
 
-    return jsonify(result)
+    return result
 
 
 @numbers_bp.route("/v1/number/validate")
