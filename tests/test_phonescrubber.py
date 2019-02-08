@@ -153,3 +153,30 @@ def test_number_too_long_parens(client):
             "valid": False
         }
     )
+
+
+def test_multiple_numbers(client):
+    query_string = urlencode({'number': ['4158675309', '400']}, True)
+    rv = client.get(f'/v1/number/validate?{query_string}')
+    json_loaded = json.loads(rv.data)
+
+    assert (len(json_loaded['results']) == 2)
+    assert (json_loaded['results'][0] == {
+        "formatted": {
+            "e164": "+14158675309",
+            "national": "(415) 867-5309"
+        },
+        "location": {
+            "description": "California",
+            "tz": ["America/Los_Angeles"]
+        },
+        "input": "4158675309",
+        "reason": "possible",
+        "type": "fixed_or_mobile",
+        "valid": True,
+    })
+    assert (json_loaded['results'][1] == {
+        "input": "400",
+        "reason": "too_short",
+        "valid": False
+    })
