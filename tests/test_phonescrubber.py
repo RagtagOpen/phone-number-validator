@@ -1,5 +1,6 @@
 import json
 import pytest
+from urllib.parse import urlencode
 
 from phonescrubber import create_app
 
@@ -12,7 +13,7 @@ def client():
     yield client
 
 
-def get_from_phone_scrubber(client, number, expected_response):
+def assert_phone_response(client, number, expected_response):
     """Runs a single test through phone_scrubber endpoint.
 
     Asserts that the formatting response for {number} is equal to
@@ -26,14 +27,16 @@ def get_from_phone_scrubber(client, number, expected_response):
         expected_response: a dictionary object representing expected JSON
             response.
     """
-    rv = client.get(f'/v1/number/{number}')
+    query_string = urlencode({'number': number})
+    rv = client.get(f'/v1/number/validate?{query_string}')
     json_loaded = json.loads(rv.data)
 
-    assert (json_loaded == expected_response)
+    assert (len(json_loaded['results']) == 1)
+    assert (json_loaded['results'][0] == expected_response)
 
 
 def test_valid_number(client):
-    get_from_phone_scrubber(
+    assert_phone_response(
         client,
         '5088435861',
         {
@@ -45,6 +48,7 @@ def test_valid_number(client):
                 "description": "Massachusetts",
                 "tz": ["America/New_York"]
             },
+            "input": "5088435861",
             "reason": "possible",
             "type": "fixed_or_mobile",
             "valid": True
@@ -53,7 +57,7 @@ def test_valid_number(client):
 
 
 def test_valid_number_plus_and_parens(client):
-    get_from_phone_scrubber(
+    assert_phone_response(
         client,
         '+1(808)555-1212',
         {
@@ -65,6 +69,7 @@ def test_valid_number_plus_and_parens(client):
                 "description": "Hawaii",
                 "tz": ["Pacific/Honolulu"]
             },
+            "input": "+1(808)555-1212",
             "reason": "possible",
             "type": "fixed_or_mobile",
             "valid": True
@@ -73,7 +78,7 @@ def test_valid_number_plus_and_parens(client):
 
 
 def test_valid_number_spaces(client):
-    get_from_phone_scrubber(
+    assert_phone_response(
         client,
         '603 555 1234',
         {
@@ -85,6 +90,7 @@ def test_valid_number_spaces(client):
                 "description": "New Hampshire",
                 "tz": ["America/New_York"]
             },
+            "input": "603 555 1234",
             "reason": "possible",
             "type": "fixed_or_mobile",
             "valid": True
@@ -93,7 +99,7 @@ def test_valid_number_spaces(client):
 
 
 def test_valid_number_dots(client):
-    get_from_phone_scrubber(
+    assert_phone_response(
         client,
         '+1 781.555.1212',
         {
@@ -105,6 +111,7 @@ def test_valid_number_dots(client):
                 "description": "Massachusetts",
                 "tz": ["America/New_York"]
             },
+            "input": "+1 781.555.1212",
             "reason": "possible",
             "type": "fixed_or_mobile",
             "valid": True
@@ -113,10 +120,11 @@ def test_valid_number_dots(client):
 
 
 def test_number_too_short(client):
-    get_from_phone_scrubber(
+    assert_phone_response(
         client,
         '508843',
         {
+            "input": "508843",
             "reason": "too_short",
             "valid": False
         }
@@ -124,10 +132,11 @@ def test_number_too_short(client):
 
 
 def test_number_too_long(client):
-    get_from_phone_scrubber(
+    assert_phone_response(
         client,
         '+150884358688',
         {
+            "input": "+150884358688",
             "reason": "too_long",
             "valid": False
         }
@@ -135,11 +144,39 @@ def test_number_too_long(client):
 
 
 def test_number_too_long_parens(client):
-    get_from_phone_scrubber(
+    assert_phone_response(
         client,
         '+1 (508) 843-58688',
         {
+            "input": "+1 (508) 843-58688",
             "reason": "too_long",
             "valid": False
         }
     )
+
+
+def test_multiple_numbers(client):
+    query_string = urlencode({'number': ['4158675309', '400']}, True)
+    rv = client.get(f'/v1/number/validate?{query_string}')
+    json_loaded = json.loads(rv.data)
+
+    assert (len(json_loaded['results']) == 2)
+    assert (json_loaded['results'][0] == {
+        "formatted": {
+            "e164": "+14158675309",
+            "national": "(415) 867-5309"
+        },
+        "location": {
+            "description": "California",
+            "tz": ["America/Los_Angeles"]
+        },
+        "input": "4158675309",
+        "reason": "possible",
+        "type": "fixed_or_mobile",
+        "valid": True,
+    })
+    assert (json_loaded['results'][1] == {
+        "input": "400",
+        "reason": "too_short",
+        "valid": False
+    })

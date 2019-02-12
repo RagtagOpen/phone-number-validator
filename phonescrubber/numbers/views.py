@@ -2,7 +2,7 @@ import phonenumbers
 import phonenumbers.geocoder
 import phonenumbers.carrier
 import phonenumbers.timezone
-from flask import abort, jsonify, make_response, redirect
+from flask import jsonify, make_response, redirect, request
 from phonescrubber.numbers import numbers_bp
 
 
@@ -31,21 +31,23 @@ map_phone_type = {
 }
 
 
-@numbers_bp.route("/v1/number/<telephone>")
-def check_number(telephone):
+def validate_number(number):
+    result = {"input": number}
+
     try:
-        x = phonenumbers.parse(telephone, "US")
+        x = phonenumbers.parse(number, "US")
+
+        reason_code = phonenumbers.is_possible_number_for_type_with_reason(
+            x, phonenumbers.PhoneNumberType.PERSONAL_NUMBER
+        )
+        is_valid, reason_code = map_possible_reason.get(reason_code, (False, "unknown"))
+
+        result["valid"] = is_valid
+        result["reason"] = reason_code
     except phonenumbers.phonenumberutil.NumberParseException as e:
-        resp = jsonify({"valid": False, "reason": "invalid_format", "message": str(e)})
-        resp.status_code = 400
-        return resp
-
-    reason_code = phonenumbers.is_possible_number_for_type_with_reason(
-        x, phonenumbers.PhoneNumberType.PERSONAL_NUMBER
-    )
-    is_valid, reason_code = map_possible_reason.get(reason_code, (False, "unknown"))
-
-    result = {"valid": is_valid, "reason": reason_code}
+        result["valid"] = False
+        result["reason"] = "invalid_format"
+        result["message"] = str(e)
 
     if result["valid"]:
         result["formatted"] = {
@@ -63,12 +65,21 @@ def check_number(telephone):
             "tz": phonenumbers.timezone.time_zones_for_number(x),
         }
 
-    return jsonify(result)
+    return result
 
 
-@numbers_bp.route('/favicon.ico')
+@numbers_bp.route("/v1/number/validate")
+def parse_number():
+    numbers = request.args.getlist("number")
+
+    output = {"results": []}
+
+    for number in numbers:
+        output["results"].append(validate_number(number))
+
+    return jsonify(output)
+
+
+@numbers_bp.route("/favicon.ico")
 def favicon_redirect():
-    return redirect(
-        'https://assets.ragtag.tech/favicon.ico',
-        301,
-    )
+    return redirect("https://assets.ragtag.tech/favicon.ico", 301)
