@@ -26,4 +26,4 @@ Then you can try running it locally:
 FLASK_APP=run.py FLASK_DEBUG=true  flask run
 ```
 
-and browse to [http://127.0.0.1:5000/v1/number/4158675309](http://127.0.0.1:5000/v1/number/4158675309) to try the API out.
+and browse to [http://127.0.0.1:5000/v1/number/validate?number=4158675309](http://127.0.0.1:5000/v1/number/validate?number=4158675309) to try the API out.
