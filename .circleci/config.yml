@@ -37,8 +37,8 @@ jobs:
             pipenv run pytest
 
   deploy:
-    machine:
-      enabled: true
+    docker:
+      - image: circleci/python:3.6
     steps:
       - checkout
       - restore_cache:
