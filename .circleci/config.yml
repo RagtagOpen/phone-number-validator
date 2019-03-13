@@ -41,6 +41,16 @@ jobs:
       enabled: true
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "Pipfile.lock" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+      - run:
+          name: install dependencies
+          command: |
+            sudo pip install pipenv
+            pipenv install --dev --deploy
       - run:
           name: Set deploy branch
           command: |
